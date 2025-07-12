@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillBot | Your Skill Swap Navigator</title>
+    <!-- Marked.js library for rendering Markdown from the AI -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- ======== CSS STYLES ARE NOW INSIDE THE HTML FILE ======== -->
+    <style>
+        /* Universal Settings & Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        :root {
+            --accent-color: #00aaff;
+            --dark-bg-primary: rgba(25, 28, 36, 0.8);
+            --dark-bg-secondary: #2c313a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* Thematic Background */
+        #background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: #121418;
+            background-image: url('https://i.ibb.co/3sN6c7f/skill-bg.png');
+            background-size: 500px;
+            opacity: 0.2;
+            animation: pan-background 60s linear infinite;
+        }
+
+        @keyframes pan-background {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* Main Chat Container */
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 700px;
+            height: 90vh;
+            margin: 5vh auto;
+            background-color: var(--dark-bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            overflow: hidden;
+            animation: float-in 0.7s ease-out;
+        }
+
+        @keyframes float-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        header h1 { font-weight: 600; }
+        header p { color: var(--text-secondary); margin-top: -10px; }
+
+        /* Chat Window & Messages */
+        #chat-window {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        #chat-window::-webkit-scrollbar { width: 8px; }
+        #chat-window::-webkit-scrollbar-track { background: transparent; }
+        #chat-window::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 85%;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: message-in 0.4s ease-out forwards;
+        }
+
+        @keyframes message-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message { align-self: flex-end; flex-direction: row-reverse; }
+        .message-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .user-message .message-icon { background: linear-gradient(135deg, var(--accent-color), #0077b3); }
+        .bot-message .message-icon { background-color: var(--dark-bg-secondary); }
+
+        .message-content { padding: 0.75rem 1.25rem; border-radius: 12px; line-height: 1.6; }
+        .user-message .message-content { background-color: var(--accent-color); color: #fff; border-radius: 12px 12px 0 12px; }
+        .bot-message .message-content { background-color: var(--dark-bg-secondary); }
+        .bot-message code { background-color: rgba(0,0,0,0.3); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }
+        .bot-message pre { background-color: rgba(0,0,0,0.3); padding: 1em; border-radius: 8px; white-space: pre-wrap; }
+
+        /* Suggestions & Form */
+        #suggestions-container { padding: 0 1.5rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .suggestion-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .suggestion-btn:hover { background-color: var(--border-color); color: var(--text-primary); }
+
+        #chat-form { display: flex; gap: 1rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); }
+        #chat-input {
+            flex-grow: 1;
+            background-color: var(--dark-bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 2rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        #chat-input:focus { border-color: var(--accent-color); }
+
+        #send-button {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--accent-color);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+        #send-button:hover { transform: scale(1.1); }
+        #send-button:disabled { background-color: #555; cursor: not-allowed; }
+
+        /* Typing Indicator Animation */
+        #typing-indicator { display: flex; gap: 0.5rem; align-items: center; padding: 0 1.5rem 0.5rem; visibility: hidden; opacity: 0; transition: opacity 0.3s ease; }
+        #typing-indicator span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        #typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        #typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- The HTML structure is the same -->
+    <div id="background-container"></div>
+    <main id="chat-container">
+        <header>
+            <h1>SkillBot</h1>
+            <p>Your AI Navigator for Skill Swap</p>
+        </header>
+        <div id="chat-window"></div>
+        <div id="suggestions-container"></div>
+        <div id="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <form id="chat-form">
+            <input type="text" id="chat-input" name="chat-input" placeholder="Ask about Python, how credits work..." required autocomplete="off">
+            <button type="submit" id="send-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </main>
+
+    <!-- Importmap must come BEFORE the script that uses it -->
+    <script type="importmap">
+    { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
+
+    <!-- ======== JAVASCRIPT IS NOW INSIDE THE HTML FILE ======== -->
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // --- 1. CONFIGURATION ---
+        // PASTE YOUR GOOGLE AI API KEY HERE
+        const API_KEY = "AIzaSyBbqVNi118bUth2Hpw15SkkYSHKk0NyEXQ";
+        const MODEL_NAME = "gemini-1.5-flash";
+
+        // --- 2. DOM ELEMENTS ---
+        const chatWindow = document.getElementById('chat-window');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+
+        // --- 3. AI AND CHAT SETUP ---
+        const systemInstruction = {
+            role: "system",
+            parts: [{
+                text: `You are 'SkillBot', the official, friendly, and enthusiastic AI assistant for a website called "Skill Swap". Your purpose is to be an expert guide for users, helping them understand how to learn and teach technical skills on the platform.
+
+Key Platform Mechanics You Must Explain:
+- **Core Concept:** Skill Swap is a community where users trade their time and expertise. It's a peer-to-peer model. For example, a Python expert can teach a web developer, who in turn teaches the Python expert about UI/UX design.
+- **Swap Credits (The Economy):** The platform runs on "Swap Credits." The system is simple: 1 hour of teaching earns you 1 Swap Credit. You can then spend 1 Swap Credit to receive 1 hour of learning from another user.
+- **Is it Free?:** The primary way to use the platform is free—by contributing your time and skills. We also offer a premium option for users to buy Swap Credits directly if they want to learn without teaching first.
+- **Finding a Partner:** Users create a profile listing "Skills I Can Teach" and "Skills I Want to Learn." Our system then suggests potential matches. Users can also browse profiles and send swap requests.
+- **Popular Skills:** We have a wide range of tech skills, including:
+  - Web Development (JavaScript, React, Node.js)
+  - Python (for Data Science, Web Dev, Automation)
+  - UI/UX Design (Figma, Adobe XD)
+  - Cloud Computing (AWS, Google Cloud)
+  - Database Management (SQL, NoSQL)
+
+Your tone should always be encouraging, clear, and concise. Use markdown like lists and bold text to make your answers easy to read.`
+            }]
+        };
+
+        // --- ERROR HANDLING FOR API KEY ---
+        if (API_KEY === "PASTE_YOUR_API_KEY_HERE" || !API_KEY) {
+            appendMessage("CRITICAL ERROR: API Key is missing. Please paste your Google AI API key into the script.", 'bot', 'SkillBot');
+        }
+
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const chat = genAI.getGenerativeModel({
+            model: MODEL_NAME,
+            systemInstruction: systemInstruction,
+        }).startChat({ history: [] });
+
+        // --- 4. CORE FUNCTIONS ---
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const userInput = chatInput.value.trim();
+            if (!userInput) return;
+            await processUserMessage(userInput);
+        }
+
+        async function processUserMessage(userInput) {
+            setLoading(true);
+            suggestionsContainer.style.display = 'none';
+            appendMessage(userInput, 'user', 'You');
+            chatInput.value = '';
+
+            try {
+                const result = await chat.sendMessageStream(userInput);
+                const botMessageDiv = appendMessage('', 'bot', 'SkillBot');
+                let botResponseText = "";
+                for await (const chunk of result.stream) {
+                    const chunkText = chunk.text();
+                    botResponseText += chunkText;
+                    botMessageDiv.innerHTML = marked.parse(botResponseText);
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                appendMessage(`Sorry, I've run into an issue connecting to the AI service. Please check the API key and ensure the 'Generative Language API' is enabled in your Google Cloud project. \n\n**Error Details:** ${error.message}`, 'bot', 'SkillBot');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // --- 5. UI HELPER FUNCTIONS ---
+        function appendMessage(text, role, senderName) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `message ${role}-message`;
+            const icon = document.createElement('div');
+            icon.className = 'message-icon';
+            icon.textContent = senderName.charAt(0);
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            if (role === 'user') {
+                content.textContent = text;
+            } else {
+                content.innerHTML = marked.parse(text);
+            }
+            messageWrapper.appendChild(icon);
+            messageWrapper.appendChild(content);
+            chatWindow.appendChild(messageWrapper);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return content;
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                typingIndicator.style.visibility = 'visible';
+                typingIndicator.style.opacity = '1';
+                sendButton.disabled = true;
+                chatInput.disabled = true;
+            } else {
+                typingIndicator.style.visibility = 'hidden';
+                typingIndicator.style.opacity = '0';
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        function displayInitialGreeting() {
+            if (API_KEY && API_KEY !== "PASTE_YOUR_API_KEY_HERE") {
+                 const greeting = "Hello! I'm SkillBot. I can help you understand how Skill Swap works. Ask me a question, or choose one of the suggestions below!";
+                 appendMessage(greeting, 'bot', 'SkillBot');
+                 const suggestions = ["How does Skill Swap work?", "Is it free to use?", "What skills can I learn?", "How do I find a swap partner?"];
+                 suggestions.forEach(q => {
+                     const btn = document.createElement('button');
+                     btn.className = 'suggestion-btn';
+                     btn.textContent = q;
+                     btn.onclick = () => processUserMessage(q);
+                     suggestionsContainer.appendChild(btn);
+                 });
+            }
+        }
+
+        // --- 6. INITIALIZE ---
+        chatForm.addEventListener('submit', handleFormSubmit);
+        displayInitialGreeting();
+    </script>
+</body>
+</html>
