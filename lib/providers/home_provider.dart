@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'auth_provider.dart';
 
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
 
@@ -23,9 +24,14 @@ final filteredUsersProvider = Provider.autoDispose<AsyncValue<List<Map<String, d
   final publicUsersAsync = ref.watch(publicUsersProvider);
   final searchQuery = ref.watch(searchQueryProvider).trim().toLowerCase();
   final selectedAvailability = ref.watch(selectedAvailabilityProvider);
+  final currentUser = ref.watch(currentUserProvider);
 
   return publicUsersAsync.whenData((users) {
     return users.where((user) {
+      if (currentUser != null && user['uid'] == currentUser.uid) {
+        return false;
+      }
+
       final skillsOffered = List<String>.from(user['skillsOffered'] ?? []);
       final skillsWanted = List<String>.from(user['skillsWanted'] ?? []);
       final availability = List<String>.from(user['availability'] ?? []);
