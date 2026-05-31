@@ -1,135 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:swap_skill/providers/user_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  bool isPublic = true;
-  Map<String, dynamic>? userData;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      final doc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      setState(() {
-        userData = doc.data();
-        isPublic = userData?['isPublic'] ?? true;
-        isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Error loading user data: $e");
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void _goToEditProfile() async {
-    final updatedData = await Navigator.pushNamed(
+  void _goToEditProfile(BuildContext context, Map<String, dynamic>? userData) {
+    Navigator.pushNamed(
       context,
       '/edit-profile',
       arguments: userData,
     );
-
-    if (updatedData != null && mounted) {
-      setState(() {
-        userData = updatedData as Map<String, dynamic>;
-      });
-    } else {
-      _loadUserData(); // fallback refresh
-    }
   }
 
   Future<void> _togglePublic(bool value) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    setState(() {
-      isPublic = value;
-    });
     await FirebaseFirestore.instance.collection('users').doc(uid).update({
       'isPublic': value,
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (isLoading || userData == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (userData == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('My Profile')),
-        body: const Center(child: Text('User data not found')),
-      );
-    }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfileAsync = ref.watch(userProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        actions: [
-          IconButton(icon: const Icon(Icons.edit), onPressed: _goToEditProfile),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadUserData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _buildProfileHeader(),
-              const SizedBox(height: 20),
-              _buildSkillSection("Skills Offered", userData?['skillsOffered']),
-              const SizedBox(height: 20),
-              _buildSkillSection("Skills Wanted", userData?['skillsWanted']),
-              const SizedBox(height: 20),
-              _buildAvailability(),
-              const SizedBox(height: 20),
-              _buildPublicToggle(),
-              const SizedBox(height: 40),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  if (context.mounted) {
-                    Navigator.pushReplacementNamed(context, '/login');
-                  }
-                },
+    return userProfileAsync.when(
+      data: (userData) {
+        if (userData == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('My Profile')),
+            body: const Center(child: Text('User data not found')),
+          );
+        }
+
+        final isPublic = userData['isPublic'] ?? true;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('My Profile'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => _goToEditProfile(context, userData),
               ),
             ],
           ),
-        ),
+          body: RefreshIndicator(
+            onRefresh: () => ref.refresh(userProfileProvider.future),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildProfileHeader(userData),
+                  const SizedBox(height: 20),
+                  _buildSkillSection("Skills Offered", userData['skillsOffered']),
+                  const SizedBox(height: 20),
+                  _buildSkillSection("Skills Wanted", userData['skillsWanted']),
+                  const SizedBox(height: 20),
+                  _buildAvailability(userData),
+                  const SizedBox(height: 20),
+                  _buildPublicToggle(isPublic),
+                  const SizedBox(height: 40),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Logout'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => Scaffold(
+        appBar: AppBar(title: const Text('My Profile')),
+        body: Center(child: Text('Error loading profile: $err')),
       ),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(Map<String, dynamic> userData) {
     return Row(
       children: [
         CircleAvatar(
           radius: 35,
-          backgroundImage: userData?['profilePhoto'] != null
-              ? NetworkImage(userData!['profilePhoto'])
+          backgroundImage: userData['profilePhoto'] != null &&
+                  userData['profilePhoto'].toString().isNotEmpty
+              ? NetworkImage(userData['profilePhoto'])
               : null,
-          child: userData?['profilePhoto'] == null
+          child: userData['profilePhoto'] == null ||
+                  userData['profilePhoto'].toString().isEmpty
               ? const Icon(Icons.person, size: 40)
               : null,
         ),
@@ -138,11 +113,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(userData?['name'] ?? '',
+              Text(userData['name'] ?? '',
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.bold)),
-              if (userData?['location'] != null)
-                Text(userData!['location'],
+              if (userData['location'] != null &&
+                  userData['location'].toString().isNotEmpty)
+                Text(userData['location'],
                     style: const TextStyle(color: Colors.grey)),
             ],
           ),
@@ -174,14 +150,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
-          children: skills.map((skill) => Chip(label: Text(skill))).toList(),
+          children: skills.map((skill) => Chip(label: Text(skill.toString()))).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildAvailability() {
-    final availability = userData?['availability'] as List<dynamic>?;
+  Widget _buildAvailability(Map<String, dynamic> userData) {
+    final availability = userData['availability'] as List<dynamic>?;
 
     if (availability == null || availability.isEmpty) {
       return const Column(
@@ -204,13 +180,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Wrap(
           spacing: 8,
           children:
-              availability.map((slot) => Chip(label: Text(slot))).toList(),
+              availability.map((slot) => Chip(label: Text(slot.toString()))).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildPublicToggle() {
+  Widget _buildPublicToggle(bool isPublic) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

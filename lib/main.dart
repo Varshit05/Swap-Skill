@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:swap_skill/screens/edit_profile_screen.dart';
 import 'package:swap_skill/screens/home_screen.dart';
 import 'package:swap_skill/screens/profile_screen.dart';
@@ -9,12 +10,31 @@ import 'package:swap_skill/screens/register_screen.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:swap_skill/auth_wrapper.dart';
 import 'package:swap_skill/screens/chatbot_screen.dart';
+import 'package:swap_skill/firebase_options.dart';
 // import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MyApp());
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') {
+      rethrow;
+    }
+  } catch (e) {
+    if (!e.toString().contains('duplicate-app')) {
+      rethrow;
+    }
+  }
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -57,7 +77,7 @@ class MyApp extends StatelessWidget {
             borderSide: const BorderSide(color: Colors.grey),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -80,8 +100,8 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfileScreen(),
         '/edit-profile': (context) => const EditProfileScreen(),
         '/swap-requests': (context) => const ReceivedSwapRequestsScreen(),
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/chatbot': (context) => const ChatBotScreen(),
       },
     );

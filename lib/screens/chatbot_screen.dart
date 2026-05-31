@@ -19,7 +19,12 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (_) => debugPrint("Chatbot loaded"),
+        onPageFinished: (_) {
+          const geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
+          _controller.runJavaScript(
+            "if (window.initializeChatbot) { window.initializeChatbot('$geminiApiKey'); }",
+          );
+        },
       ))
       ..loadFlutterAsset('assets/chatbot.html'); // ✅ Load directly
   }

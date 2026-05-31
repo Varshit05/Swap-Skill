@@ -46,16 +46,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
 
       // Navigate to home screen
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AuthWrapper()),
       );
     } on FirebaseAuthException catch (e) {
       final error = e.message ?? 'Registration failed';
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(error)));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

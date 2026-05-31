@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,28 +10,37 @@
 
     <!-- ======== CSS STYLES ARE NOW INSIDE THE HTML FILE ======== -->
     <style>
-        /* Universal Settings & Font */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        /* Universal Settings & Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
 
         :root {
-            --accent-color: #00aaff;
-            --dark-bg-primary: rgba(25, 28, 36, 0.8);
-            --dark-bg-secondary: #2c313a;
-            --text-primary: #f0f0f0;
-            --text-secondary: #b0b0b0;
-            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-color: #00d2ff;
+            --accent-gradient: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%);
+            --dark-bg-primary: rgba(18, 20, 26, 0.75);
+            --dark-bg-secondary: rgba(30, 34, 45, 0.95);
+            --text-primary: #f5f6f8;
+            --text-secondary: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glow-color: rgba(0, 210, 255, 0.15);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        body, html {
+        body,
+        html {
             font-family: 'Poppins', sans-serif;
             color: var(--text-primary);
             overflow: hidden;
             height: 100%;
+            background-color: #0b0c10;
         }
 
-        /* Thematic Background */
+        /* Thematic Background with subtle moving gradient nodes */
         #background-container {
             position: fixed;
             top: 0;
@@ -38,47 +48,65 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background-color: #121418;
-            background-image: url('https://i.ibb.co/3sN6c7f/skill-bg.png');
-            background-size: 500px;
-            opacity: 0.2;
-            animation: pan-background 60s linear infinite;
+            background: radial-gradient(circle at 10% 20%, rgba(0, 40, 80, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 150, 255, 0.05) 0%, transparent 45%),
+                #0b0c10;
         }
 
-        @keyframes pan-background {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 100% 100%; }
-        }
-
-        /* Main Chat Container */
+        /* Main Chat Container - Sleek Glassmorphism */
         #chat-container {
             display: flex;
             flex-direction: column;
-            max-width: 700px;
+            max-width: 650px;
             height: 90vh;
             margin: 5vh auto;
-            background-color: var(--dark-bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            background: var(--dark-bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+                0 0 40px var(--glow-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            /* For Safari */
             overflow: hidden;
-            animation: float-in 0.7s ease-out;
+            animation: float-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes float-in {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         header {
-            padding: 1rem;
+            padding: 1.5rem;
             text-align: center;
             border-bottom: 1px solid var(--border-color);
+            background: rgba(20, 24, 33, 0.3);
         }
-        header h1 { font-weight: 600; }
-        header p { color: var(--text-secondary); margin-top: -10px; }
+
+        header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(120deg, #ffffff, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
+            font-weight: 300;
+        }
 
         /* Chat Window & Messages */
         #chat-window {
@@ -89,105 +117,238 @@
             flex-direction: column;
             gap: 1.25rem;
         }
-        #chat-window::-webkit-scrollbar { width: 8px; }
-        #chat-window::-webkit-scrollbar-track { background: transparent; }
-        #chat-window::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+        #chat-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat-window::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chat-window::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+        }
+
+        #chat-window::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
 
         .message {
             display: flex;
-            gap: 1rem;
-            max-width: 85%;
+            gap: 0.85rem;
+            max-width: 82%;
             opacity: 0;
-            transform: translateY(10px);
-            animation: message-in 0.4s ease-out forwards;
+            transform: translateY(15px);
+            animation: message-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
         @keyframes message-in {
-            to { opacity: 1; transform: translateY(0); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .user-message { align-self: flex-end; flex-direction: row-reverse; }
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
         .message-icon {
             flex-shrink: 0;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        .user-message .message-icon { background: linear-gradient(135deg, var(--accent-color), #0077b3); }
-        .bot-message .message-icon { background-color: var(--dark-bg-secondary); }
 
-        .message-content { padding: 0.75rem 1.25rem; border-radius: 12px; line-height: 1.6; }
-        .user-message .message-content { background-color: var(--accent-color); color: #fff; border-radius: 12px 12px 0 12px; }
-        .bot-message .message-content { background-color: var(--dark-bg-secondary); }
-        .bot-message code { background-color: rgba(0,0,0,0.3); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }
-        .bot-message pre { background-color: rgba(0,0,0,0.3); padding: 1em; border-radius: 8px; white-space: pre-wrap; }
+        .user-message .message-icon {
+            background: var(--accent-gradient);
+            color: #fff;
+        }
 
-        /* Suggestions & Form */
-        #suggestions-container { padding: 0 1.5rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .suggestion-btn {
-            background: transparent;
+        .bot-message .message-icon {
+            background-color: #1a202c;
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 0.4rem 0.8rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            color: var(--accent-color);
         }
-        .suggestion-btn:hover { background-color: var(--border-color); color: var(--text-primary); }
 
-        #chat-form { display: flex; gap: 1rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); }
-        #chat-input {
-            flex-grow: 1;
+        .message-content {
+            padding: 0.85rem 1.25rem;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .user-message .message-content {
+            background: var(--accent-gradient);
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bot-message .message-content {
             background-color: var(--dark-bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 2rem;
-            padding: 0.75rem 1.25rem;
-            color: var(--text-primary);
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s ease;
+            border-bottom-left-radius: 2px;
         }
-        #chat-input:focus { border-color: var(--accent-color); }
+
+        .bot-message code {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: monospace;
+        }
+
+        .bot-message pre {
+            background-color: rgba(0, 0, 0, 0.45);
+            padding: 1rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin: 0.5rem 0;
+        }
+
+        /* Suggestions & Form */
+        #suggestions-container {
+            padding: 0 1.5rem 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .suggestion-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.45rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .suggestion-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        #chat-form {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(20, 24, 33, 0.25);
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            background-color: rgba(20, 24, 33, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 2rem;
+            padding: 0.8rem 1.5rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        #chat-input:focus {
+            border-color: var(--accent-color);
+            background-color: rgba(20, 24, 33, 0.85);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.15);
+        }
 
         #send-button {
             flex-shrink: 0;
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             border: none;
-            background-color: var(--accent-color);
+            background: var(--accent-gradient);
             color: #fff;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
         }
-        #send-button:hover { transform: scale(1.1); }
-        #send-button:disabled { background-color: #555; cursor: not-allowed; }
+
+        #send-button:hover {
+            transform: scale(1.08) rotate(-5deg);
+            box-shadow: 0 6px 20px rgba(0, 102, 255, 0.45);
+        }
+
+        #send-button:active {
+            transform: scale(0.95);
+        }
+
+        #send-button:disabled {
+            background: #2c313a;
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
 
         /* Typing Indicator Animation */
-        #typing-indicator { display: flex; gap: 0.5rem; align-items: center; padding: 0 1.5rem 0.5rem; visibility: hidden; opacity: 0; transition: opacity 0.3s ease; }
+        #typing-indicator {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+            padding: 0 1.5rem 0.75rem;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
         #typing-indicator span {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background-color: var(--text-secondary);
+            background-color: var(--accent-color);
             animation: bounce 1.4s infinite ease-in-out both;
         }
-        #typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        #typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        
+
+        #typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        #typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
         @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1.0); }
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.3);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1.0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
+
 <body>
     <!-- The HTML structure is the same -->
     <div id="background-container"></div>
@@ -204,9 +365,14 @@
             <span></span>
         </div>
         <form id="chat-form">
-            <input type="text" id="chat-input" name="chat-input" placeholder="Ask about Python, how credits work..." required autocomplete="off">
+            <input type="text" id="chat-input" name="chat-input" placeholder="Ask about Python, how credits work..."
+                required autocomplete="off">
             <button type="submit" id="send-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
             </button>
         </form>
     </main>
@@ -221,8 +387,6 @@
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
         // --- 1. CONFIGURATION ---
-        // PASTE YOUR GOOGLE AI API KEY HERE
-        const API_KEY = "AIzaSyBbqVNi118bUth2Hpw15SkkYSHKk0NyEXQ";
         const MODEL_NAME = "gemini-1.5-flash";
 
         // --- 2. DOM ELEMENTS ---
@@ -255,16 +419,38 @@ Your tone should always be encouraging, clear, and concise. Use markdown like li
             }]
         };
 
-        // --- ERROR HANDLING FOR API KEY ---
-        if (API_KEY === "PASTE_YOUR_API_KEY_HERE" || !API_KEY) {
-            appendMessage("CRITICAL ERROR: API Key is missing. Please paste your Google AI API key into the script.", 'bot', 'SkillBot');
-        }
+        let genAI;
+        let chat;
+        let isInitialized = false;
 
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const chat = genAI.getGenerativeModel({
-            model: MODEL_NAME,
-            systemInstruction: systemInstruction,
-        }).startChat({ history: [] });
+        window.initializeChatbot = (apiKey) => {
+            if (isInitialized) return;
+            if (!apiKey || apiKey === "PASTE_YOUR_API_KEY_HERE") {
+                appendMessage("CRITICAL ERROR: API Key is missing. Please configure the GEMINI_API_KEY environment variable in your Flutter application.", 'bot', 'SkillBot');
+                return;
+            }
+            try {
+                isInitialized = true;
+                genAI = new GoogleGenerativeAI(apiKey);
+                chat = genAI.getGenerativeModel({
+                    model: MODEL_NAME,
+                    systemInstruction: systemInstruction,
+                }).startChat({ history: [] });
+
+                chatForm.addEventListener('submit', handleFormSubmit);
+                displayInitialGreeting();
+            } catch (error) {
+                console.error("Initialization Error:", error);
+                appendMessage(`Failed to initialize SkillBot: ${error.message}`, 'bot', 'SkillBot');
+            }
+        };
+
+        // Standalone fallback: if Flutter doesn't initialize within 600ms, fallback to standard key
+        setTimeout(() => {
+            if (!isInitialized) {
+                window.initializeChatbot(import.meta.env.GEMINI_API_KEY);
+            }
+        }, 600);
 
         // --- 4. CORE FUNCTIONS ---
         async function handleFormSubmit(event) {
@@ -275,6 +461,10 @@ Your tone should always be encouraging, clear, and concise. Use markdown like li
         }
 
         async function processUserMessage(userInput) {
+            if (!chat) {
+                appendMessage("SkillBot has not been initialized. Please check your API configuration.", 'bot', 'SkillBot');
+                return;
+            }
             setLoading(true);
             suggestionsContainer.style.display = 'none';
             appendMessage(userInput, 'user', 'You');
@@ -292,7 +482,7 @@ Your tone should always be encouraging, clear, and concise. Use markdown like li
                 }
             } catch (error) {
                 console.error("API Error:", error);
-                appendMessage(`Sorry, I've run into an issue connecting to the AI service. Please check the API key and ensure the 'Generative Language API' is enabled in your Google Cloud project. \n\n**Error Details:** ${error.message}`, 'bot', 'SkillBot');
+                appendMessage(`Sorry, I've run into an issue connecting to the AI service. Please check your GEMINI_API_KEY and ensure the 'Generative Language API' is enabled. \n\n**Error Details:** ${error.message}`, 'bot', 'SkillBot');
             } finally {
                 setLoading(false);
             }
@@ -335,23 +525,18 @@ Your tone should always be encouraging, clear, and concise. Use markdown like li
         }
 
         function displayInitialGreeting() {
-            if (API_KEY && API_KEY !== "PASTE_YOUR_API_KEY_HERE") {
-                 const greeting = "Hello! I'm SkillBot. I can help you understand how Skill Swap works. Ask me a question, or choose one of the suggestions below!";
-                 appendMessage(greeting, 'bot', 'SkillBot');
-                 const suggestions = ["How does Skill Swap work?", "Is it free to use?", "What skills can I learn?", "How do I find a swap partner?"];
-                 suggestions.forEach(q => {
-                     const btn = document.createElement('button');
-                     btn.className = 'suggestion-btn';
-                     btn.textContent = q;
-                     btn.onclick = () => processUserMessage(q);
-                     suggestionsContainer.appendChild(btn);
-                 });
-            }
+            const greeting = "Hello! I'm SkillBot. I can help you understand how Skill Swap works. Ask me a question, or choose one of the suggestions below!";
+            appendMessage(greeting, 'bot', 'SkillBot');
+            const suggestions = ["How does Skill Swap work?", "Is it free to use?", "What skills can I learn?", "How do I find a swap partner?"];
+            suggestions.forEach(q => {
+                const btn = document.createElement('button');
+                btn.className = 'suggestion-btn';
+                btn.textContent = q;
+                btn.onclick = () => processUserMessage(q);
+                suggestionsContainer.appendChild(btn);
+            });
         }
-
-        // --- 6. INITIALIZE ---
-        chatForm.addEventListener('submit', handleFormSubmit);
-        displayInitialGreeting();
     </script>
 </body>
+
 </html>

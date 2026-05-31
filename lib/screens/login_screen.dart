@@ -28,14 +28,18 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
+      if (!mounted) return;
       // Navigate to Home screen
       Navigator.pushReplacementNamed(context, '/');
     } on FirebaseAuthException catch (e) {
       final error = e.message ?? 'Login failed';
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(error)));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -54,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
             key: _formKey,
             child: Column(
               children: [
-                Text(
+                const Text(
                   'Login to Your Account',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),

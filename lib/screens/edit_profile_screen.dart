@@ -50,7 +50,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'availability': availability,
         'isPublic': isPublic,
       });
-      if (context.mounted) {
+      if (mounted) {
         Navigator.pop(context);
       }
     }

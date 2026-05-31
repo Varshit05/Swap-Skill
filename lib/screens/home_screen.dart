@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:swap_skill/providers/home_provider.dart';
+import 'package:swap_skill/providers/user_provider.dart';
 import 'package:swap_skill/screens/swap_request.dart';
 import 'package:swap_skill/screens/user_detail.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String searchQuery = '';
-  String selectedAvailability = 'All';
 
   final List<String> availabilityOptions = [
     'All',
@@ -24,28 +23,20 @@ class _HomeScreenState extends State<HomeScreen> {
     'Weekends',
   ];
 
-  String firstName = '';
-
   @override
-  void initState() {
-    super.initState();
-    _fetchUserName();
-  }
-
-  void _fetchUserName() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      final doc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final name = doc.data()?['name'] ?? '';
-      setState(() {
-        firstName = name.split(' ').first;
-      });
-    }
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final firstName = userProfileAsync.maybeWhen(
+      data: (data) => data?['name']?.split(' ')?.first ?? '',
+      orElse: () => '',
+    );
+
     return Scaffold(
       backgroundColor: Colors.blue[50],
       appBar: AppBar(
@@ -115,15 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onChanged: (value) {
-          setState(() {
-            searchQuery = value.trim();
-          });
+          ref.read(searchQueryProvider.notifier).state = value;
         },
       ),
     );
   }
 
   Widget _buildAvailabilityDropdown() {
+    final selectedAvailability = ref.watch(selectedAvailabilityProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -141,9 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }).toList(),
             onChanged: (value) {
               if (value != null) {
-                setState(() {
-                  selectedAvailability = value;
-                });
+                ref.read(selectedAvailabilityProvider.notifier).state = value;
               }
             },
           ),
@@ -153,38 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUserList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .where('isPublic', isEqualTo: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(child: Text("Something went wrong"));
-        }
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    final filteredUsersAsync = ref.watch(filteredUsersProvider);
 
-        final users = snapshot.data!.docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-
-          final skillsOffered = List<String>.from(data['skillsOffered'] ?? []);
-          final skillsWanted = List<String>.from(data['skillsWanted'] ?? []);
-          final availability = List<String>.from(data['availability'] ?? []);
-
-          final matchesSearch = searchQuery.isEmpty ||
-              skillsOffered.any((skill) =>
-                  skill.toLowerCase().contains(searchQuery.toLowerCase())) ||
-              skillsWanted.any((skill) =>
-                  skill.toLowerCase().contains(searchQuery.toLowerCase()));
-
-          final matchesAvailability = selectedAvailability == 'All' ||
-              availability.contains(selectedAvailability);
-
-          return matchesSearch && matchesAvailability;
-        }).toList();
-
+    return filteredUsersAsync.when(
+      data: (users) {
         if (users.isEmpty) {
           return const Center(child: Text("No matching users found."));
         }
@@ -192,11 +153,13 @@ class _HomeScreenState extends State<HomeScreen> {
         return ListView.builder(
           itemCount: users.length,
           itemBuilder: (context, index) {
-            final data = users[index].data() as Map<String, dynamic>;
+            final data = users[index];
             return _buildUserCard(data);
           },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => const Center(child: Text("Something went wrong")),
     );
   }
 
@@ -206,14 +169,14 @@ class _HomeScreenState extends State<HomeScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 3,
       child: ListTile(
-        title: Text(user['name'],
+        title: Text(user['name'] ?? '',
             style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Skills Offered: ${user['skillsOffered'].join(', ')}'),
-            Text('Skills Wanted: ${user['skillsWanted'].join(', ')}'),
-            Text('Availability: ${user['availability'].join(', ')}'),
+            Text('Skills Offered: ${(user['skillsOffered'] as List<dynamic>?)?.join(', ') ?? ''}'),
+            Text('Skills Wanted: ${(user['skillsWanted'] as List<dynamic>?)?.join(', ') ?? ''}'),
+            Text('Availability: ${(user['availability'] as List<dynamic>?)?.join(', ') ?? ''}'),
           ],
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),

@@ -31,6 +31,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     }
     
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Swap request sent')),
     );
