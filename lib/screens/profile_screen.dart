@@ -56,7 +56,8 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   _buildProfileHeader(userData),
                   const SizedBox(height: 20),
-                  _buildSkillSection("Skills Offered", userData['skillsOffered']),
+                  _buildSkillSection(
+                      "Skills Offered", userData['skillsOffered']),
                   const SizedBox(height: 20),
                   _buildSkillSection("Skills Wanted", userData['skillsWanted']),
                   const SizedBox(height: 20),
@@ -150,7 +151,9 @@ class ProfileScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
-          children: skills.map((skill) => Chip(label: Text(skill.toString()))).toList(),
+          children: skills
+              .map((skill) => Chip(label: Text(skill.toString())))
+              .toList(),
         ),
       ],
     );
@@ -179,8 +182,9 @@ class ProfileScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
-          children:
-              availability.map((slot) => Chip(label: Text(slot.toString()))).toList(),
+          children: availability
+              .map((slot) => Chip(label: Text(slot.toString())))
+              .toList(),
         ),
       ],
     );
